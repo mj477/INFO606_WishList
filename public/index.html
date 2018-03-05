@@ -1,0 +1,231 @@
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="wishList">
+<head>
+    <!-- META -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+    <title>Node/Angular Wish List App</title>
+
+    <!-- SCROLLS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- SPELLS -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script><!-- load angular -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.8/angular-filter.min.js"></script>
+
+    <script src="js/controllers/main.js"></script> <!-- load up our controller -->
+    <script src="js/services/wishListService.js"></script> <!-- load our service -->
+    <script src="js/core.js"></script> <!-- load our main application -->
+
+</head>
+
+<!-- SET THE CONTROLLER -->
+<body ng-controller="mainController">
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="jumbotron text-center">
+        <h1>Wish List (SPA) </h1>
+         <span class="label label-info"></span>
+
+    </div>
+
+    <div class="cont">
+        <button class= "button" ng-click="page='members'">Members</button>
+        <button class= "button" ng-click="page='occasion'">Occasions</button>
+        <button class= "button" ng-click="page='wishlist'">Wish List</button>
+        <button class= "button" ng-click="page='about'">About</button>
+    </div>
+
+    <div  ng-show="page === 'members'">
+
+    <h2>Members</h2>
+
+        <div id="todo-list" class="row">
+            <div>
+                <table>
+                    <tr>
+                        <td><B>Delete Item</B></td>
+                        <td><B>Full Name</B></td>
+                        <td><B>Birthday
+                            <br> (mm/dd/yyyy)</BR>
+                        </B></td>
+                        <td><B>Hobbies</B></td>
+                    </tr>
+
+                    <!--- items is being returned as an array of objects --->
+                    <tr ng-repeat="x in items.recordset"> <!--- .recordset is required to query the array of objects --->
+                        <td> <input name = "famCheck" type="checkbox" ng-click="deleteItem(x.fID)"></td>
+                        <td>{{ x.fName }}</td> <!--- MFJ need to change controller response from array to object --->
+                        <td>{{ x.birthday}}</td>
+                        <td>{{ x.hobbies }}</td>
+                    </tr>
+                </table>
+
+                <p class="text-center" ng-show="loading">
+                    <span class="fa fa-spinner fa-spin fa-3x"></span>
+                </p>
+
+            </div>
+        </div>
+
+        <!-- Create -->
+        <div id="create-form" class="row">
+            <div class="col-sm-8 col-sm-offset-2 text-center">
+                <form>
+                    <div class="form-group">
+
+                        <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+                        <input type="text" class="form-control input-lg text-center" placeholder="Enter full name" ng-model="formData.text">
+                        <input type="text" class="form-control input-lg text-center" placeholder="Enter birthday in mm/dd/yyyy format" ng-model="formData.birthday">
+                        <input type="text" class="form-control input-lg text-center" placeholder="Enter list of hobbies" ng-model="formData.hobbies">
+                    </div>
+
+                    <!-- Create New Member -->
+                    <button name = 'fam' type="submit" class="btn btn-primary btn-lg" ng-click="createItemNowSQL();">Add</button>
+                </form>
+            </div>
+        </div>
+
+
+    </div> <!--- End of MemberDiv--->
+
+    <!--- OCCASIONS SECTION IS HERE -->
+
+    <div ng-show="page === 'occasion'">
+        <h2>Occasions Documented</h2>
+        <div id="occ-list" class="row">
+            <div >
+
+                <!-- loop through the model object - find all items IN $scope.itemsOcc -->
+                <table>
+                    <tr>
+                        <td><B>Delete Item</B></td>
+                        <td><B>Occasions</B></td>
+                    </tr>
+                    <tr ng-repeat="y in itemsOcc.recordset"> <!-- .recordset is required to query the array of objects --->
+                        <td> <input name = "occCheck" type="checkbox" ng-click="deleteItemOcc(y.oID)"></td>
+
+                        <td>{{ y.occasion }}</td>
+                    </tr>
+                </table>
+
+                <p class="text-center" ng-show="loading">
+                    <span class="fa fa-spinner fa-spin fa-3x"></span>
+                </p>
+
+            </div>
+        </div>
+
+        <!-- Create -->
+        <div id="create-form-occ" class="row">
+            <div class="col-sm-8 col-sm-offset-2 text-center">
+                <form>
+                    <div class="form-group">
+
+                        <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+                        <input type="text" class="form-control input-lg text-center" placeholder="Enter new occasion here!" ng-model="formData.text">
+                    </div>
+
+                    <!-- createToDo() Create New -->
+                    <button name = "occBtn" type="submit" class="btn btn-primary btn-lg" ng-click="createItemNowOcc();">Add</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!--- LIST SECTION - By occasion and person! -->
+
+    <div ng-show="page === 'wishlist'">
+
+        <div id="wishlist" class="row">
+
+            <div class="cont">
+                <table>
+                    <h4>Filters</h4>
+                    <tr><td><B>Members</B></td>
+                        <td><B>Occasions</B></td>
+                        <td><B>Search Filter</B></td>
+                        <td><B>Sort By</B></td></tr>
+
+                    <tr>
+                        <td><select ng-model="formData.fam">
+                                <option ng-repeat="x in items.recordset" value='{{x.fID}}' >{{x.fName}}</option>
+                            </select>
+                        </td>
+
+                        <td><select ng-model="formData.occ">
+                                <option ng-repeat="y in itemsOcc.recordset" value='{{y.oID}}' >{{y.occasion}}</option>
+                        </select>
+                        </td>
+                        <td><input type="text" id="query" ng-model="query"/>
+                        </td>
+
+                        <td><select ng-model="orderList">
+                            <option value="occasion">By Occasion</option>
+                            <option value="fName">By Name</option>
+                            <option value="itemDescription">By Item</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+                <!-- loop through the model object - find all itemsList IN $scope.items -->
+                <table>
+                    <h4> Result Set</h4>
+                    <tr>
+                        <td><B>Delete Item</B></td>
+                        <td><B>Occasions</B></td>
+                        <td><B>Name</B></td>
+                        <td><B>Item Description</B></td>
+                    </tr>
+                    <tr ng-repeat="z in itemsList.recordset | filter:query | orderBy:orderList"  > <!-- specify thte model "instance" name in the search --->
+                        <td> <input name = "wishCheck" type="checkbox" ng-click="deleteItemWish(z.iID)"></td>
+                        <td>{{ z.occasion }}</td>
+                        <td>{{ z.fName }}</td>
+                        <td>{{ z.itemDescription }}</td>
+                    </tr>
+                </table>
+
+                <p class="text-center" ng-show="loading">
+                    <span class="fa fa-spinner fa-spin fa-3x"></span>
+                </p>
+
+            </div>
+
+
+        <!-- Create -->
+        <div id="create-form-wish" class="row">
+            <div class="col-sm-8 col-sm-offset-2 text-center">
+                <form>
+                    <div class="form-group">
+
+                        <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+                        <input type="text" class="form-control input-lg text-center" placeholder="Enter new item to the list here!" ng-model="formData.text">
+                    </div>
+
+                    <!-- Create New -->
+                    <button name = "wishBtn" type="submit" class="btn btn-primary btn-lg" ng-click="createItemNowWish();">Add</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div ng-controller="mainController" ng-show="page === 'about'">
+        <h2 align="middle">Technology Stack</h2>
+
+        <div class="imageAlign"><img src="images/tech_stack.jpg" style="vertical-align:middle"></div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
